@@ -8,6 +8,12 @@
 .idea/**/dictionaries
 .idea/**/shelf
 
+# Manual
+/target/**
+target/**
+.idea/**
+/.idea/**
+
 # AWS User-specific
 .idea/**/aws.xml
 
