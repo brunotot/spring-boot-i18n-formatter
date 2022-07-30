@@ -71,8 +71,8 @@ public class TranslationFolderWrapper {
     private String currentKey;
     private File folder;
     private File srcFolder;
-    private boolean removeIfKeyExistsInCore;
-    private boolean removeIfKeyNotInUse;
+    private final boolean removeIfKeyExistsInCore;
+    private final boolean removeIfKeyNotInUse;
 
     public TranslationFolderWrapper(
             final String folderPath,
