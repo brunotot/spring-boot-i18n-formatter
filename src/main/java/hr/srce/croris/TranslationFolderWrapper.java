@@ -30,6 +30,7 @@ public class TranslationFolderWrapper {
     private static final String VALUE_EMPTY = "VALUE_EMPTY";
     private static final String WRONG_LANGUAGE_TRANSLATION = "WRONG_LANGUAGE_TRANSLATION";
     private static final String KEY_MISSING = "KEY_MISSING";
+    private static final String DUPLICATE_VALUES = "DUPLICATE_VALUES";
     private static final List<String> IGNORABLE_ENDING_DIFF_FILE_SUBSTRINGS_TRANSLATION_KEYS = List.of(
             "js",
             "html",
@@ -43,12 +44,17 @@ public class TranslationFolderWrapper {
             "delete.success",
             "delete.failure"
     );
+    private static final List<String> IGNORABLE_STARTING_SUBSTRINGS_TRANSLATION_KEYS = List.of(
+            "excel.",
+            "ustanova.export."
+    );
     private static final Map<String, String> DIFFERENCES_MAP = Map.ofEntries(
             new AbstractMap.SimpleEntry<>(KEY_IN_CORE, "Ključ već postoji u Core modulu."),
             new AbstractMap.SimpleEntry<>(KEY_NOT_IN_USE, "Ključ se ne koristi u projektu."),
             new AbstractMap.SimpleEntry<>(VALUE_EMPTY, "Vrijednost prijevoda je prazna."),
             new AbstractMap.SimpleEntry<>(WRONG_LANGUAGE_TRANSLATION, "Jezik prijevoda se ne poklapa sa jezikom datoteke."),
-            new AbstractMap.SimpleEntry<>(KEY_MISSING, "Ključ prijevoda nedostaje u nekoj od messages_*.properties datoteka.")
+            new AbstractMap.SimpleEntry<>(KEY_MISSING, "Ključ prijevoda nedostaje u nekoj od messages_*.properties datoteka."),
+            new AbstractMap.SimpleEntry<>(DUPLICATE_VALUES, "Prijevod se duplicira na više ključeva.")
     );
 
     private static final Map<String, Language> LANGUAGES_MAP = Map.ofEntries(
@@ -65,13 +71,28 @@ public class TranslationFolderWrapper {
     private String currentKey;
     private File folder;
     private File srcFolder;
+    private boolean removeIfKeyExistsInCore;
+    private boolean removeIfKeyNotInUse;
 
-    public TranslationFolderWrapper(final String folderPath) throws IOException {
+    public TranslationFolderWrapper(
+            final String folderPath,
+            final boolean removeIfKeyExistsInCore,
+            final boolean removeIfKeyNotInUse
+    ) throws IOException {
+        this.removeIfKeyExistsInCore = removeIfKeyExistsInCore;
+        this.removeIfKeyNotInUse = removeIfKeyNotInUse;
         this.setFolder(folderPath);
     }
 
-    public TranslationFolderWrapper(final String folderPath, final String coreFolderPath) throws IOException {
-        this.coreWrapper = new TranslationFolderWrapper(coreFolderPath);
+    public TranslationFolderWrapper(
+            final String folderPath,
+            final String coreFolderPath,
+            final boolean removeIfKeyExistsInCore,
+            final boolean removeIfKeyNotInUse
+    ) throws IOException {
+        this.removeIfKeyExistsInCore = removeIfKeyExistsInCore;
+        this.removeIfKeyNotInUse = removeIfKeyNotInUse;
+        this.coreWrapper = new TranslationFolderWrapper(coreFolderPath, removeIfKeyExistsInCore, removeIfKeyNotInUse);
         this.setFolder(folderPath);
     }
 
@@ -258,6 +279,7 @@ public class TranslationFolderWrapper {
 
     private boolean stringExistsInProject(final String str, final File folder) throws IOException {
         if (IGNORABLE_ENDING_SUBSTRINGS_TRANSLATION_KEYS.stream().anyMatch(str::endsWith)) return true;
+        if (IGNORABLE_STARTING_SUBSTRINGS_TRANSLATION_KEYS.stream().anyMatch(str::startsWith)) return true;
         List<File> files = listFilesInternal(folder);
 
         for (final File fileEntry : files) {
@@ -280,7 +302,8 @@ public class TranslationFolderWrapper {
     }
 
     private void execAppropriateChangeForDiff(final String diffKey, final String translationKey) {
-        if (KEY_IN_CORE.equals(diffKey) || KEY_NOT_IN_USE.equals(diffKey)) {
+        if ((this.removeIfKeyExistsInCore && KEY_IN_CORE.equals(diffKey))
+                || (this.removeIfKeyNotInUse && KEY_NOT_IN_USE.equals(diffKey))) {
             for (Map.Entry<String, TranslationFileWrapper> entry : translationsMap.entrySet()) {
                 TranslationFileWrapper translationFileWrapper = entry.getValue();
                 translationFileWrapper.getTranslations().remove(translationKey);
@@ -291,7 +314,7 @@ public class TranslationFolderWrapper {
         }
     }
 
-    private void putToMapWhereValuesAreLists(Map<String, Set<String>> map, String key, String newValue) {
+    private void putToMapWhereValuesAreLists(final Map<String, Set<String>> map, final String key, final String newValue) {
         Set<String> listValue = map.get(key);
         if (listValue == null) {
             listValue = new TreeSet<>();
@@ -328,6 +351,9 @@ public class TranslationFolderWrapper {
                 }
                 this.keysCheckedForExistence.add(translationKey);
                 final String translationValue = translationsEntry.getValue().trim();
+
+                handleDuplicateValues(differencesByTypeOfDiff, translations, translationKey, translationValue);
+
                 if ("".equals(translationValue)) {
                     this.putToMapWhereValuesAreLists(differencesByTypeOfDiff, VALUE_EMPTY, translationKey);
                 } else {
@@ -374,5 +400,23 @@ public class TranslationFolderWrapper {
             });
         });
         System.out.println("***********************************");
+    }
+
+    private void handleDuplicateValues(
+            final  Map<String, Set<String>> differencesByTypeOfDiff,
+            final Map<String, String> translations,
+            final String translationKey,
+            final String translationValue
+    ) {
+        var isDuplicateEntry = translations.entrySet()
+                .stream()
+                .anyMatch(entry -> {
+                    var key = entry.getKey();
+                    var value = entry.getValue();
+                    return !key.equals(translationKey) && translationValue.equals(value);
+                });
+        if (isDuplicateEntry) {
+            this.putToMapWhereValuesAreLists(differencesByTypeOfDiff, DUPLICATE_VALUES, translationValue);
+        }
     }
 }
