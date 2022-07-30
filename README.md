@@ -3,7 +3,7 @@
 ## Build and run
 
 ### Summary
-`build` folder contains shell scripts for building and running the application.
+`build` folder contains shell scripts for building and running the application with `args.properties` configuration file.
 The application first has to be built to be able to run.
 
 ### Terminal commands
