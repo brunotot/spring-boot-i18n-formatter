@@ -6,9 +6,20 @@
 `build` folder contains shell scripts for building and running the application with `args.properties` configuration file.
 The application first has to be built to be able to run.
 
-### Terminal commands
+### Steps for starting the application
 ```shell
+# 1. Position CLI to a desired folder for cloning and proceed...
+
+# 2. Clone the repository
+git clone git@github.com:brunotot/spring-boot-i18n-formatter.git
+
+# 3. Position CLI to the dedicated build folder in the project
+cd spring-boot-i18n-formatter/build
+
+# 4. Build the project with dependencies
 sh build.sh
+
+# 5. Start
 sh run.sh
 ```
 
