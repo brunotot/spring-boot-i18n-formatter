@@ -13,9 +13,9 @@ sh run.sh
 ```
 
 ### Command line params list
-| Key                     | Type    |Default | Example                                                             | Required           |
-|-------------------------|---------|--------|---------------------------------------------------------------------|--------------------|
-| core                    | String  |null    | /home/crorisvanjski4/Desktop/dev/core/src/main/resources/i18n-core  | :heavy_check_mark: |
-| path                    | String  |null    | /home/crorisvanjski4/Desktop/dev/croris-ppg/src/main/resources/i18n | :heavy_check_mark: |
-| removeIfKeyNotInUse     | boolean |false   | true                                                                | :x:                |
-| removeIfKeyExistsInCore | boolean |true    | true                                                                | :x:                |
+| Key                     | Type      | Default | Example                                                                  | Required           |
+|-------------------------|-----------|---------|--------------------------------------------------------------------------|--------------------|
+| core                    | `String`  | `null`  | /home/crorisvanjski4/Desktop/dev<br/>/core/src/main/resources/i18n-core  | :heavy_check_mark: |
+| path                    | `String`  | `null`  | /home/crorisvanjski4/Desktop/dev<br/>/croris-ppg/src/main/resources/i18n | :heavy_check_mark: |
+| removeIfKeyNotInUse     | `boolean` | `false` | true                                                                     | :x:                |
+| removeIfKeyExistsInCore | `boolean` | `true`  | true                                                                     | :x:                |
