@@ -19,7 +19,9 @@ cd spring-boot-i18n-formatter/build
 # 4. Build the project with dependencies
 sh build.sh
 
-# 5. Start
+# 5. Make sure to configure app arguments in args.properties
+
+# 6. Start
 sh run.sh
 ```
 
